@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
   {
+    name: { type: String, required: false },
     phone: {
       type: String,
       required: true,
@@ -10,6 +11,7 @@ const userSchema = new Schema(
       minlength: 10,
     },
     activated: { type: Boolean, default: false, required: false },
+    avatar: { type: String, required: false },
   },
   { timestamps: true }
 );

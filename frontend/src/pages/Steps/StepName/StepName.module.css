@@ -1,5 +1,13 @@
 .paragraph {
-    width: 70%;
-    text-align: center;
-    margin: 20px auto;
+  width: 70%;
+  text-align: center;
+  margin: 20px auto;
+}
+
+.bottomParagraph {
+  composes: bottomParagraphn from "../StepPhoneEmail/StepPhoneEmail.module.css";
+}
+
+.actionButtonWrap {
+  composes: actionButtonWrap from "../StepPhoneEmail/StepPhoneEmail.module.css";
 }
