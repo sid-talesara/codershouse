@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const refreshModel = require("../Models/refresh-model");
 const accessTokenSecret = process.env.JWT_ACCESS_TOKEN_SECRET;
 const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET;
 class TokenService {
@@ -11,6 +12,15 @@ class TokenService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  async storeRefreshToken(payload) {
+    try {
+      const { userId, token } = payload;
+      await refreshModel.create({ token, userId });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
