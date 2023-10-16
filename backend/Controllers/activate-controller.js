@@ -11,7 +11,7 @@ class ActivateController {
 
     // Image buffer
     const buffer = Buffer.from(
-      avatar.replace(/^data:image\/(png);base64,/, ""),
+      avatar.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, ""),
       "base64"
     );
 

@@ -3,6 +3,7 @@ const HashService = require("../services/hash-service");
 const userService = require("../services/user-service");
 const tokenService = require("../services/token-service");
 const UserDto = require("../dltos/user-dlto");
+const refreshModel = require("../Models/refresh-model");
 
 class AuthController {
   async sendOTP(req, res) {
@@ -27,6 +28,7 @@ class AuthController {
     }
     res.json({ hash: hash });
   }
+
   async verifyOTP(req, res) {
     const { otp, phone, hash } = req.body;
 
@@ -80,6 +82,74 @@ class AuthController {
 
     const userDto = new UserDto(user);
     res.json({ auth: true, user: userDto });
+  }
+
+  async refreshToken(req, res) {
+    // get refresh cookies from request
+    const { refreshToken: refreshTokenFromCookies } = req.cookies;
+    // check if token is valid
+    let userData;
+    try {
+      userData = await tokenService.verifyRefreshToken(refreshTokenFromCookies);
+    } catch (error) {
+      console.log(error);
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    // check if token is in db
+    try {
+      const token = await tokenService.findRefreshToken(
+        userData._id,
+        refreshTokenFromCookies
+      );
+
+      if (!token) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Error" });
+    }
+
+    // Check if valid user
+    const user = await userService.findUser({ _id: userData._id });
+    console.log(user);
+    if (!user) {
+      return res.status(404).json({ message: "No User Found" });
+    }
+    // generate new
+    const { refreshToken, accessToken } = tokenService.generateTokens({
+      _id: userData._id,
+    });
+
+    // Update Refresh Token
+    try {
+      tokenService.updateRefreshToken(userData._id, refreshToken);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Error" });
+    }
+
+    // put the new tokens in cookies
+
+    res.cookie("refreshToken", refreshToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+      httpOnly: true,
+    });
+
+    res.cookie("accessToken", accessToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+      httpOnly: true,
+    });
+
+    const userDto = new UserDto(user);
+    res.json({ auth: true, user: userDto });
+  }
+
+  async logout(req, res) {
+    const { refreshToken } = req.cookies;
+    await tokenService.removeToken(refreshToken);
+    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
+    res.json({ user: null, auth: false });
   }
 }
 

@@ -9,12 +9,20 @@ import { setAuth } from "../../../store/authSlice.js";
 
 const StepOtp = () => {
   const [otp, setOtp] = useState("");
+  const [inputField, setInputField] = useState(false);
   const dispatch = useDispatch();
   const { phone, hash } = useSelector((state) => state.auth.otp);
 
   async function submit() {
     try {
+      if (!otp || !phone || !hash) return;
+      if (otp.length < 4 || otp.length > 4) {
+        setInputField(true);
+        return;
+      }
+
       const { data } = await verifyOtp({ otp, phone, hash });
+      console.log(data);
       dispatch(setAuth(data));
       console.log(data);
     } catch (error) {
@@ -29,6 +37,7 @@ const StepOtp = () => {
           <div className={styles.actionButtonWrap}>
             <Button onClick={submit} text="Next" />
           </div>
+          {inputField && <p className={styles.inputFieldError}>Invalid OTP</p>}
           <p className={styles.bottomParagraph}>
             By entering your number, you’re agreeing to our Terms of Service and
             Privacy Policy. Thanks!
