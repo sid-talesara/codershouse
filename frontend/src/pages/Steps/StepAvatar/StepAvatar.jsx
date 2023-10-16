@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../../../components/shared/Card/Card";
 import Button from "../../../components/shared/Button/Button";
 import styles from "./StepAvatar.module.css";
@@ -10,6 +10,7 @@ import Loader from "../../../components/shared/Loader/Loader";
 
 const StepName = ({ onNext }) => {
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { name, avatar } = useSelector((state) => state.activate);
   const dispatch = useDispatch();
   const [image, setImage] = useState("/images/monkey-avatar.png");
@@ -19,7 +20,8 @@ const StepName = ({ onNext }) => {
       setLoading(true);
       const { data } = await activate({ name, avatar });
       if (data.auth) {
-        dispatch(setAuth(data));
+        // check
+        if (!mounted) dispatch(setAuth(data));
       }
       console.log(data);
     } catch (error) {
@@ -28,6 +30,12 @@ const StepName = ({ onNext }) => {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    return () => {
+      setMounted(true);
+    };
+  }, []);
 
   function captureImage(e) {
     const file = e.target.files[0];
